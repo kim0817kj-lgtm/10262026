@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <!-- 모바일 환경에서 화면 크기가 기기에 맞춰 최적화되도록 설정하는 뷰포트 메타태그입니다 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>대자연의 숨결 | The Breath of Nature</title>
+  
+  <!-- 구글 웹 폰트 불러오기 (Pretendard 대체용 Noto Sans KR 및 세련된 영문 폰트 Montserrat, Cinzel) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Montserrat:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ==========================================================================
+       [1] CSS 기본 초기화 및 디자인 변수 (Design Tokens) 설정
+       초보자 안내: CSS 변수(--변수명)를 사용하면 색상이나 폰트를 한곳에서 일괄 관리할 수 있습니다.
+       ========================================================================== */
+    :root {
+      /* 메인 배경색: 짙고 신비로운 에메랄드 다크 톤 */
+      --bg-dark: #070e0c;
+      --bg-card: rgba(18, 30, 26, 0.65);
+      --bg-card-hover: rgba(26, 44, 38, 0.85);
+
+      /* 포인트 컬러: 싱그러운 자연을 상징하는 에메랄드 & 시안 컬러 */
+      --primary: #10b981;
+      --primary-light: #34d399;
+      --primary-glow: rgba(16, 185, 129, 0.4);
+      --secondary: #06b6d4;
+
+      /* 텍스트 컬러 */
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      /* 글래스모피즘 (유리창 효과) 테두리 선 */
+      --border-glass: rgba(255, 255, 255, 0.08);
+      --border-active: rgba(52, 211, 153, 0.4);
+
+      /* 폰트 패밀리 지정 */
+      --font-kr: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-en: 'Montserrat', sans-serif;
+      --font-serif: 'Cinzel', serif;
+
+      /* 전환 속도 */
+      --transition-normal: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      --transition-slow: 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* 모든 요소의 여백 초기화 및 박스 사이징 통일 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* 스무스 스크롤: 메뉴 링크를 눌렀을 때 페이지가 튕기지 않고 부드럽게 미끄러집니다 */
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-kr);
+      overflow-x: hidden; /* 가로 스크롤 방지 */
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 10%, #0d231d 0%, var(--bg-dark) 70%);
+      line-height: 1.7;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* 링크 기본 스타일 제거 */
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* 버튼 기본 스타일 리셋 */
+    button {
+      border: none;
+      background: none;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    /* 컨테이너 규격 설정 (반응형 중앙 정렬) */
+    .container {
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ==========================================================================
+       [2] 최상단 스크롤 진행도 표시 바 (Scroll Progress Bar)
+       사용자가 스크롤을 얼마나 내렸는지 화면 맨 위에 네온 선으로 보여줍니다.
+       ========================================================================== */
+    #scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 0%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      box-shadow: 0 0 12px var(--primary);
+      z-index: 9999;
+      transition: width 0.1s ease-out;
+    }
+
+    /* ==========================================================================
+       [3] 상단 네비게이션 헤더 (글래스모피즘 적용)
+       스크롤을 내리면 배경이 흐려지면서 상단에 고정되는 세련된 헤더입니다.
+       ========================================================================== */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 20px 0;
+      z-index: 1000;
+      transition: background-color var(--transition-normal), padding var(--transition-normal), backdrop-filter var(--transition-normal);
+    }
+
+    /* 스크롤 시 자바스크립트로 추가될 클래스 */
+    .header.scrolled {
+      padding: 14px 0;
+      background: rgba(7, 14, 12, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-glass);
+    }
+
+    .header-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* 로고 스타일링 */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--text-main);
+    }
+
+    .logo-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--primary), #059669);
+      border-radius: 10px;
+      font-size: 1.1rem;
+      box-shadow: 0 0 16px var(--primary-glow);
+    }
+
+    .logo span {
+      background: linear-gradient(120deg, #ffffff 40%, var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* 네비게이션 메뉴 목록 */
+    .nav-menu {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-link {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      position: relative;
+      padding: 6px 0;
+      transition: color var(--transition-normal);
+    }
+
+    .nav-link:hover {
+      color: var(--primary-light);
+    }
+
+    /* 메뉴 호버 시 나타나는 세련된 밑줄 애니메이션 */
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 0;
+      height: 2px;
+      background: var(--primary);
+      transition: width var(--transition-normal), left var(--transition-normal);
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+      left: 0;
+    }
+
+    /* 모바일 햄버거 메뉴 버튼 (PC에서는 숨김) */
+    .mobile-toggle {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      width: 32px;
+      height: 32px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .mobile-toggle span {
+      width: 24px;
+      height: 2px;
+      background-color: var(--text-main);
+      border-radius: 2px;
+      transition: transform var(--transition-normal), opacity var(--transition-normal);
+    }
+
+    /* ==========================================================================
+       [4] 메인 히어로 섹션 (중앙 비디오 배치)
+       1020.mp4 동영상이 중앙에 자리잡고, 모바일에서도 비율이 깨지지 않도록 설계합니다.
+       ========================================================================== */
+    .hero {
+      position: relative;
+      padding-top: 140px;
+      padding-bottom: 90px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    /* 은은하게 퍼지는 배경 광원 효과 */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, transparent 70%);
+      filter: blur(60px);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      color: var(--primary-light);
+      font-size: 0.88rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+    }
+
+    .hero-title {
+      font-size: clamp(2.2rem, 5.5vw, 4.2rem);
+      font-weight: 900;
+      letter-spacing: -1px;
+      line-height: 1.25;
+      margin-bottom: 20px;
+      color: #ffffff;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-title .gradient-text {
+      background: linear-gradient(135deg, #a7f3d0 0%, #34d399 45%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
+    .hero-desc {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto 48px auto;
+      font-weight: 300;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* --------------------------------------------------------------------------
+       ★ 비디오 컨테이너: 모바일과 PC 모두에서 비율이 깨지지 않도록 핵심 스타일링
+       - aspect-ratio: 16 / 9 (표준 와이드 화면 비율 고정)
+       - object-fit: cover (화면에 꽉 차게 잘림 없이 부드럽게 채움)
+       -------------------------------------------------------------------------- */
+    .video-wrapper {
+      position: relative;
+      max-width: 1040px;
+      margin: 0 auto;
+      border-radius: 24px;
+      overflow: hidden;
+      /* 화려한 앰비언트 글로우 및 유리 테두리 효과 */
+      box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.9),
+                  0 0 50px -10px var(--primary-glow);
+      border: 1px solid var(--border-active);
+      background: #000;
+      /* 가로세로 16:9 비율 유지 (모바일 깨짐 방지 핵심 속성) */
+      aspect-ratio: 16 / 9;
+      transform: perspective(1000px) rotateX(1deg);
+      transition: transform var(--transition-slow), box-shadow var(--transition-slow);
+      z-index: 2;
+    }
+
+    .video-wrapper:hover {
+      transform: perspective(1000px) rotateX(0deg) scale(1.01);
+      box-shadow: 0 30px 80px -10px rgba(0, 0, 0, 0.95),
+                  0 0 70px -5px rgba(52, 211, 153, 0.5);
+    }
+
+    /* 비디오 본체 스타일 */
+    .hero-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* 영상이 박스 크기에 맞춰 여백 없이 꽉 채워집니다 */
+      display: block;
+    }
+
+    /* 비디오 상단에 은은한 비네팅(어두운 모서리)을 주어 분위기를 고급스럽게 연출 */
+    .video-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, transparent 65%, rgba(7, 14, 12, 0.6) 100%);
+      pointer-events: none;
+    }
+
+    /* 비디오 우측 하단 소리 토글 버튼 (기본은 음소거이나, 누르면 소리를 켤 수 있음) */
+    .video-sound-toggle {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: rgba(7, 14, 12, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-glass);
+      border-radius: 40px;
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: background var(--transition-normal), transform var(--transition-normal);
+      z-index: 5;
+    }
+
+    .video-sound-toggle:hover {
+      background: rgba(16, 185, 129, 0.8);
+      transform: translateY(-2px);
+    }
+
+    /* 아래로 스크롤을 유도하는 마우스 애니메이션 아이콘 */
+    .scroll-down {
+      margin-top: 45px;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-dim);
+      font-size: 0.82rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: color var(--transition-normal);
+    }
+
+    .scroll-down:hover {
+      color: var(--primary-light);
+    }
+
+    .mouse-icon {
+      width: 24px;
+      height: 40px;
+      border: 2px solid var(--border-glass);
+      border-radius: 20px;
+      position: relative;
+    }
+
+    .mouse-wheel {
+      width: 4px;
+      height: 8px;
+      background: var(--primary);
+      border-radius: 4px;
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: wheelBounce 2s infinite ease-in-out;
+    }
+
+    @keyframes wheelBounce {
+      0% { top: 6px; opacity: 1; }
+      50% { top: 20px; opacity: 0.2; }
+      100% { top: 6px; opacity: 1; }
+    }
+
+    /* ==========================================================================
+       [5] 스크롤 애니메이션 클래스 (.reveal)
+       자바스크립트 Intersection Observer와 연동되어 화면에 진입할 때 작동합니다.
+       ========================================================================== */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity var(--transition-slow), transform var(--transition-slow);
+      will-change: opacity, transform;
+    }
+
+    /* 화면에 감지되었을 때 추가되는 활성화 클래스 */
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* 자식 요소들이 차례대로 올라오는 딜레이 효과 */
+    .delay-1 { transition-delay: 0.15s; }
+    .delay-2 { transition-delay: 0.3s; }
+    .delay-3 { transition-delay: 0.45s; }
+
+    /* ==========================================================================
+       [6] 자연 데이터 통계 섹션 (Stats Section)
+       ========================================================================== */
+    .stats-section {
+      padding: 70px 0;
+      border-top: 1px solid var(--border-glass);
+      border-bottom: 1px solid var(--border-glass);
+      background: rgba(10, 20, 17, 0.4);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 30px;
+      text-align: center;
+    }
+
+    .stat-card {
+      padding: 24px;
+      border-radius: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      backdrop-filter: blur(12px);
+      transition: transform var(--transition-normal), border-color var(--transition-normal);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--primary-light);
+    }
+
+    .stat-number {
+      font-size: 2.8rem;
+      font-weight: 900;
+      color: var(--primary-light);
+      font-family: var(--font-en);
+      margin-bottom: 6px;
+    }
+
+    .stat-label {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* ==========================================================================
+       [7] 자연 테마 카드 그리드 (4대 자연 테마 소개)
+       호버 시 네온 빛과 입체적인 확대 효과가 들어가는 화려한 카드 디자인입니다.
+       ========================================================================== */
+    .section {
+      padding: 120px 0;
+      position: relative;
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 650px;
+      margin: 0 auto 60px auto;
+    }
+
+    .section-subtitle {
+      font-size: 0.9rem;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .section-title {
+      font-size: clamp(1.8rem, 3.8vw, 2.8rem);
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.3;
+      margin-bottom: 16px;
+    }
+
+    .section-desc {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      font-weight: 300;
+    }
+
+    .themes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 28px;
+    }
+
+    .theme-card {
+      position: relative;
+      border-radius: 22px;
+      padding: 36px 28px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      backdrop-filter: blur(16px);
+      transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 380px;
+    }
+
+    .theme-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      opacity: 0;
+      transition: opacity var(--transition-normal);
+    }
+
+    .theme-card:hover {
+      transform: translateY(-10px);
+      background: var(--bg-card-hover);
+      border-color: var(--border-active);
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7),
+                  0 0 30px -5px var(--primary-glow);
+    }
+
+    .theme-card:hover::before {
+      opacity: 1;
+    }
+
+    .theme-icon {
+      font-size: 2.8rem;
+      margin-bottom: 24px;
+      display: inline-block;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
+    }
+
+    .theme-card-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+
+    .theme-card-text {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+      margin-bottom: 28px;
+    }
+
+    .theme-tag {
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      color: var(--primary-light);
+      align-self: flex-start;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* ==========================================================================
+       [8] 자연의 경이로움 비주얼 갤러리 섹션 (Visual Highlights)
+       ========================================================================== */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 24px;
+    }
+
+    .gallery-item {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      min-height: 320px;
+      background-size: cover;
+      background-position: center;
+      border: 1px solid var(--border-glass);
+      transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+    }
+
+    .gallery-item:hover {
+      transform: scale(1.02);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    /* 그리드 레이아웃 다양화 (모던한 비대칭 구조) */
+    .gallery-col-7 { grid-column: span 7; }
+    .gallery-col-5 { grid-column: span 5; }
+    .gallery-col-4 { grid-column: span 4; }
+    .gallery-col-8 { grid-column: span 8; }
+
+    .gallery-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 40%, rgba(7, 14, 12, 0.92) 100%);
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .gallery-tag {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--primary-light);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 6px;
+    }
+
+    .gallery-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* ==========================================================================
+       [9] 자연 보호 메시지 및 인터랙티브 카드 (Call To Action)
+       ========================================================================== */
+    .cta-box {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%);
+      border: 1px solid var(--border-active);
+      border-radius: 28px;
+      padding: 60px 40px;
+      text-align: center;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.8);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-box::after {
+      content: '🌍';
+      position: absolute;
+      bottom: -40px;
+      right: -20px;
+      font-size: 180px;
+      opacity: 0.08;
+      pointer-events: none;
+    }
+
+    .cta-title {
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      font-weight: 800;
+      margin-bottom: 16px;
+      color: #fff;
+    }
+
+    .cta-desc {
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 36px auto;
+      font-size: 1.05rem;
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 36px;
+      background: linear-gradient(135deg, var(--primary), #059669);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 1rem;
+      border-radius: 40px;
+      box-shadow: 0 10px 25px var(--primary-glow);
+      transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 15px 35px rgba(16, 185, 129, 0.6);
+    }
+
+    /* ==========================================================================
+       [10] 푸터 (Footer)
+       ========================================================================== */
+    .footer {
+      padding: 60px 0 30px 0;
+      border-top: 1px solid var(--border-glass);
+      background: #040807;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    .footer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .footer-links a:hover {
+      color: var(--primary-light);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      padding-top: 30px;
+    }
+
+    /* 맨 위로 가기 버튼 */
+    .back-to-top {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.85);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity var(--transition-normal), transform var(--transition-normal), visibility var(--transition-normal);
+      z-index: 900;
+    }
+
+    .back-to-top.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .back-to-top:hover {
+      transform: translateY(-4px);
+      background: var(--primary-light);
+    }
+
+    /* ==========================================================================
+       [11] 모바일 반응형 미디어 쿼리 (Media Queries)
+       태블릿, 스마트폰 등 다양한 크기의 기기에서 디자인이 어긋나지 않도록 처리합니다.
+       ========================================================================== */
+    @media (max-width: 992px) {
+      .gallery-col-7,
+      .gallery-col-5,
+      .gallery-col-4,
+      .gallery-col-8 {
+        grid-column: span 12; /* 태블릿 이하에서는 갤러리가 한 줄씩 꽉 차게 변경 */
+      }
+    }
+
+    @media (max-width: 768px) {
+      /* 모바일 네비게이션 드롭다운 스타일 */
+      .nav-menu {
+        position: fixed;
+        top: 74px;
+        left: 0;
+        width: 100%;
+        background: rgba(7, 14, 12, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        flex-direction: column;
+        align-items: center;
+        padding: 30px 0;
+        gap: 20px;
+        border-bottom: 1px solid var(--border-glass);
+        transform: translateY(-120%);
+        opacity: 0;
+        transition: transform var(--transition-normal), opacity var(--transition-normal);
+      }
+
+      .nav-menu.open {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      .mobile-toggle {
+        display: flex; /* 모바일에서 햄버거 버튼 노출 */
+      }
+
+      .hero {
+        padding-top: 110px;
+        padding-bottom: 60px;
+      }
+
+      /* 모바일 비디오 여백 및 비율 조정 */
+      .video-wrapper {
+        border-radius: 16px;
+        /* 모바일에서도 16:9 비율을 유지하여 절대 찌그러지지 않습니다 */
+        aspect-ratio: 16 / 9;
+      }
+
+      .video-sound-toggle {
+        bottom: 12px;
+        right: 12px;
+        padding: 6px 12px;
+        font-size: 0.75rem;
+      }
+
+      .section {
+        padding: 80px 0;
+      }
+
+      .cta-box {
+        padding: 40px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- [1] 화면 최상단 스크롤 진행도 표시 바 -->
+  <div id="scroll-progress"></div>
+
+  <!-- [2] 상단 고정 네비게이션 헤더 -->
+  <header class="header" id="header">
+    <div class="container header-inner">
+      <!-- 로고 영역 -->
+      <a href="#" class="logo">
+        <span class="logo-icon">🌿</span>
+        <span>AURA NATURE</span>
+      </a>
+
+      <!-- 데스크톱 메뉴 (모바일에서는 햄버거 토글 연동) -->
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="#hero" class="nav-link">홈</a></li>
+        <li><a href="#about" class="nav-link">지구의 척도</a></li>
+        <li><a href="#themes" class="nav-link">자연 테마</a></li>
+        <li><a href="#gallery" class="nav-link">경이로운 순간</a></li>
+        <li><a href="#conserve" class="nav-link">자연 보호</a></li>
+      </ul>
+
+      <!-- 모바일 햄버거 메뉴 버튼 -->
+      <button class="mobile-toggle" id="mobileToggle" aria-label="메뉴 열기">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- [3] 메인 히어로 섹션 (중앙 1020.mp4 비디오 포함) -->
+  <section class="hero" id="hero">
+    <div class="container">
+      
+      <!-- 상단 감성 뱃지 -->
+      <div class="hero-badge reveal">
+        <span>✨</span> 대자연의 경이로운 숨결을 마주하다
+      </div>
+
+      <!-- 메인 헤드라인 타이틀 -->
+      <h1 class="hero-title reveal delay-1">
+        지구가 들려주는 가장 순수한 이야기<br>
+        <span class="gradient-text">경이로운 자연의 세계</span>
+      </h1>
+
+      <!-- 서브 설명글 -->
+      <p class="hero-desc reveal delay-2">
+        수억 년의 시간이 빚어낸 웅장한 대자연의 파노라마.<br>
+        우리가 숨 쉬는 이곳, 아름다운 지구의 모든 순간을 감상해보세요.
+      </p>
+
+      <!-- ★ 핵심 요구사항: 중앙 반응형 비디오 박스 ★ -->
+      <!-- 
+        - autoplay: 페이지 진입 시 영상 자동 시작
+        - loop: 영상 무한 반복 재생
+        - muted: 브라우저 정책 준수(음소거 상태여야 자동 재생이 허용됨)
+        - playsinline: 모바일(iOS 등)에서 전체화면으로 튀지 않고 페이지 안에서 재생
+      -->
+      <div class="video-wrapper reveal delay-3">
+        <video 
+          class="hero-video" 
+          id="natureVideo"
+          autoplay 
+          loop 
+          muted 
+          playsinline
+          preload="auto"
+        >
+          <!-- 프로젝트 폴더 내의 1020.mp4 동영상 연결 -->
+          <source src="1020.mp4" type="video/mp4">
+          브라우저가 비디오 태그를 지원하지 않습니다. 최신 브라우저를 이용해주세요.
+        </video>
+
+        <!-- 은은한 비네팅 오버레이 -->
+        <div class="video-overlay"></div>
+
+        <!-- 사용자를 위한 소리 On/Off 인터랙티브 토글 버튼 -->
+        <button class="video-sound-toggle" id="soundToggle" type="button">
+          <span id="soundIcon">🔇</span>
+          <span id="soundText">소리 켜기</span>
+        </button>
+      </div>
+
+      <!-- 스크롤 유도 인디케이터 -->
+      <a href="#about" class="scroll-down reveal delay-3">
+        <div class="mouse-icon">
+          <div class="mouse-wheel"></div>
+        </div>
+        <span>SCROLL DOWN</span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- [4] 지구의 척도 및 데이터 통계 섹션 (Stats Section) -->
+  <section class="stats-section" id="about">
+    <div class="container">
+      <div class="stats-grid">
+        
+        <div class="stat-card reveal">
+          <div class="stat-number">45억년</div>
+          <div class="stat-label">지구가 품어온 생명의 역사</div>
+        </div>
+
+        <div class="stat-card reveal delay-1">
+          <div class="stat-number">71%</div>
+          <div class="stat-label">지구를 감싸고 있는 푸른 바다</div>
+        </div>
+
+        <div class="stat-card reveal delay-2">
+          <div class="stat-number">3조 그루</div>
+          <div class="stat-label">산소를 뿜어내는 지구의 숲</div>
+        </div>
+
+        <div class="stat-card reveal delay-3">
+          <div class="stat-number">870만+</div>
+          <div class="stat-label">공존하는 야생 생물 종</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- [5] 4대 자연 테마 소개 섹션 (Themes Grid) -->
+  <section class="section" id="themes">
+    <div class="container">
+      
+      <!-- 섹션 헤더 -->
+      <div class="section-header reveal">
+        <span class="section-subtitle">THE ESSENCE OF EARTH</span>
+        <h2 class="section-title">자연이 품은 4가지 신비</h2>
+        <p class="section-desc">지구의 생태계를 구성하는 네 가지 거대한 축을 통해 자연의 순환과 생명력을 만나보세요.</p>
+      </div>
+
+      <!-- 카드 그리드 -->
+      <div class="themes-grid">
+
+        <!-- 카드 1: 원시의 숲 -->
+        <div class="theme-card reveal">
+          <div>
+            <div class="theme-icon">🌲</div>
+            <h3 class="theme-card-title">원시의 숲 (Forest)</h3>
+            <p class="theme-card-text">
+              지구의 거대한 폐이자 수많은 생명의 보금자리. 피톤치드와 이끼 향기가 가득한 울창한 삼림은 우리에게 깊은 휴식과 생명력을 선사합니다.
+            </p>
+          </div>
+          <span class="theme-tag">생명의 요람</span>
+        </div>
+
+        <!-- 카드 2: 깊은 바다 -->
+        <div class="theme-card reveal delay-1">
+          <div>
+            <div class="theme-icon">🌊</div>
+            <h3 class="theme-card-title">신비의 대양 (Ocean)</h3>
+            <p class="theme-card-text">
+              지구 표면의 대부분을 덮고 있는 거대한 생명의 근원. 아직 인류가 다 밝혀내지 못한 무한한 심해의 신비와 푸른 리듬이 머무는 곳입니다.
+            </p>
+          </div>
+          <span class="theme-tag">끝없는 푸른빛</span>
+        </div>
+
+        <!-- 카드 3: 웅장한 산맥 -->
+        <div class="theme-card reveal delay-2">
+          <div>
+            <div class="theme-icon">⛰️</div>
+            <h3 class="theme-card-title">침묵의 산맥 (Mountain)</h3>
+            <p class="theme-card-text">
+              구름을 뚫고 솟아오른 험준한 바위와 만년설. 오랜 세월 바람과 비를 견뎌내며 우뚝 선 산은 대자연의 묵직한 위엄과 경외심을 깨워줍니다.
+            </p>
+          </div>
+          <span class="theme-tag">영원한 위엄</span>
+        </div>
+
+        <!-- 카드 4: 대기와 하늘 -->
+        <div class="theme-card reveal delay-3">
+          <div>
+            <div class="theme-icon">🌌</div>
+            <h3 class="theme-card-title">찬란한 창공 (Cosmos Sky)</h3>
+            <p class="theme-card-text">
+              극지방의 밤하늘을 수놓는 오로라와 쏟아질 듯 빛나는 은하수. 지구를 포근히 감싸고 있는 대기가 그려내는 가장 찬란한 빛의 예술입니다.
+            </p>
+          </div>
+          <span class="theme-tag">빛의 파노라마</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- [6] 경이로운 자연 갤러리 섹션 (Visual Highlights) -->
+  <section class="section" id="gallery" style="background: rgba(5, 12, 10, 0.4);">
+    <div class="container">
+      
+      <div class="section-header reveal">
+        <span class="section-subtitle">MOMENTS IN NATURE</span>
+        <h2 class="section-title">렌즈에 담긴 경이로운 순간</h2>
+        <p class="section-desc">순간의 빛과 그림자가 완성한 자연의 걸작을 감상해보세요.</p>
+      </div>
+
+      <!-- 비대칭 감성 카드 그리드 -->
+      <div class="gallery-grid">
+        
+        <!-- 갤러리 1: 일출의 설산 -->
+        <div class="gallery-item gallery-col-7 reveal" style="background-image: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80');">
+          <div class="gallery-overlay">
+            <span class="gallery-tag">ALPS MOUNTAINS</span>
+            <h4 class="gallery-title">아침 햇살을 머금은 황금빛 알프스</h4>
+          </div>
+        </div>
+
+        <!-- 갤러리 2: 오로라의 밤 -->
+        <div class="gallery-item gallery-col-5 reveal delay-1" style="background-image: url('https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=900&q=80');">
+          <div class="gallery-overlay">
+            <span class="gallery-tag">NORTHERN LIGHTS</span>
+            <h4 class="gallery-title">노르웨이 피오르드의 오로라 춤</h4>
+          </div>
+        </div>
+
+        <!-- 갤러리 3: 안개 낀 삼나무 숲 -->
+        <div class="gallery-item gallery-col-4 reveal delay-2" style="background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80');">
+          <div class="gallery-overlay">
+            <span class="gallery-tag">MISTY FOREST</span>
+            <h4 class="gallery-title">새벽 안개가 내려앉은 숲의 고요</h4>
+          </div>
+        </div>
+
+        <!-- 갤러리 4: 에메랄드 해안선 -->
+        <div class="gallery-item gallery-col-8 reveal delay-3" style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80');">
+          <div class="gallery-overlay">
+            <span class="gallery-tag">TROPICAL WATERS</span>
+            <h4 class="gallery-title">태고의 순수함을 간직한 산호초 해변</h4>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- [7] 자연 보호 & 지속 가능성 메시지 (Call To Action) -->
+  <section class="section" id="conserve">
+    <div class="container">
+      <div class="cta-box reveal">
+        <h2 class="cta-title">자연이 지속될 때, 우리의 미래도 숨 쉽니다</h2>
+        <p class="cta-desc">
+          지구는 우리에게 끝없는 위로와 풍요를 주었습니다. 이제는 우리가 작은 실천으로 자연의 생명력을 지켜줄 차례입니다. 오늘의 푸른 지구를 내일의 아이들에게 전해주세요.
+        </p>
+        <a href="#hero" class="cta-btn" onclick="alert('자연을 아끼는 마음을 함께 나누어 주셔서 감사합니다! 🌿');">
+          <span>🌿</span> 지구를 위한 한 걸음 함께하기
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- [8] 푸터 (Footer) -->
+  <footer class="footer">
+    <div class="container">
+      
+      <div class="footer-top">
+        <div class="logo">
+          <span class="logo-icon">🌿</span>
+          <span>AURA NATURE</span>
+        </div>
+        <ul class="footer-links">
+          <li><a href="#hero">처음으로</a></li>
+          <li><a href="#about">지구의 척도</a></li>
+          <li><a href="#themes">테마 소개</a></li>
+          <li><a href="#gallery">갤러리</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-bottom">
+        <p>© 2026 AURA NATURE. All Rights Reserved. Crafted for nature lovers.</p>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- [9] 최상단으로 바로 가기 플로팅 버튼 -->
+  <button class="back-to-top" id="backToTop" aria-label="맨 위로 가기">↑</button>
+
+  <!-- ==========================================================================
+       [10] 인터랙션 자바스크립트 로직 (친절한 한글 주석 포함)
+       ========================================================================== -->
+  <script>
+    /**
+     * DOM(HTML 문서 구조)이 완전히 로드된 후 스크립트를 안전하게 실행합니다.
+     */
+    document.addEventListener('DOMContentLoaded', () => {
+
+      /* ------------------------------------------------------------------------
+       * [A] 스크롤 진행도 표시 바 (Scroll Progress Bar) 계산 로직
+       * ------------------------------------------------------------------------ */
+      const progressBar = document.getElementById('scroll-progress');
+      const header = document.getElementById('header');
+      const backToTopBtn = document.getElementById('backToTop');
+
+      window.addEventListener('scroll', () => {
+        // 현재 스크롤된 높이
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        // 스크롤 가능한 전체 총 높이 (전체 문서 높이 - 브라우저 창 높이)
+        const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        
+        // 백분율(%) 계산
+        const scrollPercent = (scrollTop / scrollHeight) * 100;
+        progressBar.style.width = scrollPercent + '%';
+
+        // 스크롤이 50px 이상 내려오면 헤더에 블러 배경 스타일 추가
+        if (scrollTop > 50) {
+          header.classList.add('scrolled');
+        } else {
+          header.classList.remove('scrolled');
+        }
+
+        // 스크롤이 400px 이상 내려오면 '맨 위로 가기' 플로팅 버튼 노출
+        if (scrollTop > 400) {
+          backToTopBtn.classList.add('show');
+        } else {
+          backToTopBtn.classList.remove('show');
+        }
+      });
+
+      // '맨 위로 가기' 버튼 클릭 시 부드럽게 최상단으로 이동
+      backToTopBtn.addEventListener('click', () => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      });
+
+      /* ------------------------------------------------------------------------
+       * [B] 스크롤 애니메이션 (Intersection Observer API)
+       * 요소가 화면(뷰포트)에 진입할 때 자동으로 '.active' 클래스를 붙여 페이드인 효과를 줍니다.
+       * ------------------------------------------------------------------------ */
+      const revealElements = document.querySelectorAll('.reveal');
+
+      const revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          // 화면에 12% 이상 보이면 애니메이션 발동
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            // 한번 화면에 나타난 요소는 관찰을 해제하여 브라우저 리소스를 절약합니다
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.12, // 12% 가시성
+        rootMargin: '0px 0px -40px 0px' // 화면 하단에서 40px 여유를 두고 감지
+      });
+
+      // 관찰 대상 등록
+      revealElements.forEach(el => revealObserver.observe(el));
+
+      /* ------------------------------------------------------------------------
+       * [C] 메인 비디오 소리 켜기/끄기 토글 로직
+       * 브라우저는 기본적으로 '음소거(muted)' 상태에서만 자동 재생을 허용합니다.
+       * 사용자가 버튼을 눌렀을 때 소리를 켤 수 있도록 배려한 인터랙션입니다.
+       * ------------------------------------------------------------------------ */
+      const video = document.getElementById('natureVideo');
+      const soundToggle = document.getElementById('soundToggle');
+      const soundIcon = document.getElementById('soundIcon');
+      const soundText = document.getElementById('soundText');
+
+      if (soundToggle && video) {
+        soundToggle.addEventListener('click', () => {
+          // 현재 비디오가 음소거 상태라면 소리를 켭니다
+          if (video.muted) {
+            video.muted = false;
+            soundIcon.textContent = '🔊';
+            soundText.textContent = '소리 끄기';
+          } else {
+            // 소리가 켜져 있다면 다시 음소거로 전환합니다
+            video.muted = true;
+            soundIcon.textContent = '🔇';
+            soundText.textContent = '소리 켜기';
+          }
+        });
+      }
+
+      /* ------------------------------------------------------------------------
+       * [D] 모바일 햄버거 메뉴 토글 로직
+       * ------------------------------------------------------------------------ */
+      const mobileToggle = document.getElementById('mobileToggle');
+      const navMenu = document.getElementById('navMenu');
+      const navLinks = document.querySelectorAll('.nav-link');
+
+      if (mobileToggle && navMenu) {
+        // 햄버거 버튼 클릭 시 메뉴 열림/닫힘
+        mobileToggle.addEventListener('click', () => {
+          navMenu.classList.toggle('open');
+        });
+
+        // 모바일 메뉴 항목을 클릭하면 메뉴가 닫히도록 처리
+        navLinks.forEach(link => {
+          link.addEventListener('click', () => {
+            navMenu.classList.remove('open');
+          });
+        });
+      }
+
+    });
+  </script>
+</body>
+</html>
+
